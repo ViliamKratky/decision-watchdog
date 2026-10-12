@@ -1,0 +1,41 @@
+{
+  "id": "neg-depbump",
+  "category": "negative/dependency_bump",
+  "description": "Patch-level dependency bump.",
+  "repo": {
+    "name": "clinic-booking",
+    "commits": [
+      {
+        "message": "deps",
+        "files": {
+          "requirements.txt": "django==5.1.2\npsycopg[binary]==3.2.1\n"
+        }
+      },
+      {
+        "message": "Bump django to 5.1.4 and psycopg to 3.2.3",
+        "files": {
+          "requirements.txt": "django==5.1.4\npsycopg[binary]==3.2.3\n"
+        }
+      }
+    ]
+  },
+  "analyze_commit": "HEAD",
+  "record": {
+    "source": "git",
+    "event": "commit"
+  },
+  "labels": {
+    "should_record": false,
+    "expected_types": [],
+    "must_capture": [],
+    "must_not_capture": [
+      {
+        "item": "bump recorded",
+        "pattern": "bump|upgrade|5\\.1\\.4"
+      }
+    ],
+    "max_entries": 0
+  },
+  "held_out": false,
+  "existing_entries": []
+}

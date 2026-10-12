@@ -1,0 +1,62 @@
+{
+  "id": "pos-constraint-hosting",
+  "category": "positive/constraint",
+  "description": "Serverless timeout forces PDF generation into a background job.",
+  "repo": {
+    "name": "invoicer",
+    "commits": [
+      {
+        "message": "Generate PDF in API route",
+        "files": {
+          "api/invoice.ts": "export default async function handler(req, res) {\n  const pdf = await renderPdf(req.body)\n  res.send(pdf)\n}\n"
+        }
+      }
+    ],
+    "uncommitted": {
+      "api/invoice.ts": "import { enqueue } from '../lib/queue'\n\nexport default async function handler(req, res) {\n  const job = await enqueue('render-pdf', req.body)\n  res.status(202).json({ jobId: job.id })\n}\n",
+      "worker/render.ts": "export async function renderJob(payload) {\n  const pdf = await renderPdf(payload)\n  await uploadToBlob(pdf)\n}\n"
+    }
+  },
+  "record": {
+    "source": "claude",
+    "event": "Stop",
+    "prompt": "invoices over ~40 pages fail in production with FUNCTION_INVOCATION_TIMEOUT but work locally",
+    "assistant": "Locally there is no time limit, but on Vercel's Hobby plan a serverless function is killed after 10 seconds, and rendering a 40-page invoice with Puppeteer takes 14-20 s. Upgrading to Pro would raise the limit to 60 s, but you said the budget is fixed at the free tier, so I moved rendering out of the request: the API route now enqueues a job and returns 202 with a job id, and a background worker renders the PDF and uploads it to blob storage. The UI will need to poll for the result."
+  },
+  "labels": {
+    "should_record": true,
+    "expected_types": [
+      "constraint",
+      "decision",
+      "problem",
+      "discovery"
+    ],
+    "must_capture": [
+      {
+        "fact": "Vercel hobby 10s function timeout",
+        "patterns": [
+          [
+            "10 ?s",
+            "10 seconds",
+            "timeout"
+          ]
+        ]
+      },
+      {
+        "fact": "moved PDF rendering to background job",
+        "patterns": [
+          [
+            "background",
+            "queue",
+            "worker",
+            "job"
+          ]
+        ]
+      }
+    ],
+    "must_not_capture": [],
+    "max_entries": 3
+  },
+  "held_out": false,
+  "existing_entries": []
+}

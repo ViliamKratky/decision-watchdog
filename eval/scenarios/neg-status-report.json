@@ -1,0 +1,42 @@
+{
+  "id": "neg-status-report",
+  "category": "negative/status_report",
+  "description": "Status / progress summary.",
+  "repo": {
+    "name": "fleet-reports",
+    "commits": [
+      {
+        "message": "xlsx export",
+        "files": {
+          "reports/xlsx.py": "def render_xlsx(rows):\n    ...\n"
+        }
+      },
+      {
+        "message": "fuel import",
+        "files": {
+          "reports/fuel_import.py": "def import_fuel(path):\n    ...\n"
+        }
+      }
+    ]
+  },
+  "record": {
+    "source": "codex",
+    "event": "Stop",
+    "prompt": "where are we? what's left before friday?",
+    "assistant": "Status:\n- Done: Excel export (reports/xlsx.py), fuel card CSV import, vehicle list.\n- In progress: monthly cost aggregation - about half done, the per-driver breakdown is missing.\n- Not started: email delivery of reports, admin page for vehicles.\n- Tests: 41 passing, 0 failing.\nRealistically aggregation and email delivery fit before Friday; the admin page probably doesn't."
+  },
+  "labels": {
+    "should_record": false,
+    "expected_types": [],
+    "must_capture": [],
+    "must_not_capture": [
+      {
+        "item": "status recorded",
+        "pattern": "status|progress|friday|in progress"
+      }
+    ],
+    "max_entries": 0
+  },
+  "held_out": false,
+  "existing_entries": []
+}

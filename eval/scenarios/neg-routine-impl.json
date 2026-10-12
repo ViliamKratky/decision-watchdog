@@ -1,0 +1,45 @@
+{
+  "id": "neg-routine-impl",
+  "category": "negative/routine_implementation",
+  "description": "Adds an endpoint following an already-recorded design.",
+  "existing_entries": [
+    {
+      "type": "decision",
+      "title": "REST endpoints follow resource-per-module layout with SQLite repository layer",
+      "summary": "Each resource gets a module in app/api/ that calls a repository class over SQLite; chosen over an ORM to keep dependencies at zero."
+    }
+  ],
+  "repo": {
+    "name": "ledgerly",
+    "commits": [
+      {
+        "message": "Accounts API",
+        "files": {
+          "app/api/accounts.py": "def list_accounts(repo):\n    return repo.all()\n\ndef create_account(repo, data):\n    return repo.insert(data)\n"
+        }
+      }
+    ],
+    "uncommitted": {
+      "app/api/accounts.py": "def list_accounts(repo):\n    return repo.all()\n\ndef create_account(repo, data):\n    return repo.insert(data)\n\ndef delete_account(repo, account_id):\n    return repo.delete(account_id)\n"
+    }
+  },
+  "record": {
+    "source": "claude",
+    "event": "Stop",
+    "prompt": "add a delete endpoint for accounts, same as the others",
+    "assistant": "Added delete_account() to app/api/accounts.py. It follows the same pattern as list/create: it calls repo.delete(account_id) on the repository layer. No other changes."
+  },
+  "labels": {
+    "should_record": false,
+    "expected_types": [],
+    "must_capture": [],
+    "must_not_capture": [
+      {
+        "item": "delete endpoint recorded",
+        "pattern": "delete"
+      }
+    ],
+    "max_entries": 0
+  },
+  "held_out": false
+}

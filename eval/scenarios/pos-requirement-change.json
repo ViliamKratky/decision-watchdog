@@ -1,0 +1,62 @@
+{
+  "id": "pos-requirement-change",
+  "category": "positive/requirement_change",
+  "description": "Client switches export from PDF to Excel, reshaping the report module.",
+  "repo": {
+    "name": "fleet-reports",
+    "commits": [
+      {
+        "message": "PDF report layout",
+        "files": {
+          "reports/pdf.py": "def render_pdf(rows):\n    ...\n"
+        }
+      }
+    ],
+    "uncommitted": {
+      "reports/xlsx.py": "from openpyxl import Workbook\n\n\ndef render_xlsx(rows):\n    wb = Workbook()\n    ws = wb.active\n    ws.append(['vehicle', 'km', 'fuel_l', 'cost_eur'])\n    for r in rows:\n        ws.append([r.vehicle, r.km, r.fuel_l, r.cost_eur])\n    return wb\n",
+      "reports/model.py": "from dataclasses import dataclass\n\n@dataclass\nclass ReportRow:\n    vehicle: str\n    km: int\n    fuel_l: float\n    cost_eur: float\n"
+    }
+  },
+  "record": {
+    "source": "claude",
+    "event": "Stop",
+    "prompt": "Change of plans from the client meeting: they don't want the PDF reports anymore, the accountants want Excel files they can filter and pivot. Drop the PDF work.",
+    "assistant": "Understood. Since the accountants will pivot the data themselves, the report module no longer needs a layout engine; it needs clean, typed rows. I introduced a ReportRow dataclass as the single structured model and an openpyxl-based render_xlsx() that writes one row per vehicle with numeric cells (not formatted strings) so filtering and pivot tables work. The half-finished PDF layout code in reports/pdf.py is now dead; I'll delete it in a follow-up commit once you confirm nobody else needs PDFs."
+  },
+  "labels": {
+    "should_record": true,
+    "expected_types": [
+      "decision",
+      "constraint",
+      "discovery"
+    ],
+    "must_capture": [
+      {
+        "fact": "requirement changed from PDF to Excel",
+        "patterns": [
+          [
+            "excel",
+            "xlsx"
+          ],
+          [
+            "pdf"
+          ]
+        ]
+      },
+      {
+        "fact": "because accountants want to filter/pivot",
+        "patterns": [
+          [
+            "pivot",
+            "filter",
+            "accountant"
+          ]
+        ]
+      }
+    ],
+    "must_not_capture": [],
+    "max_entries": 2
+  },
+  "held_out": false,
+  "existing_entries": []
+}

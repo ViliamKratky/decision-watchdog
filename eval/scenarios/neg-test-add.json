@@ -1,0 +1,41 @@
+{
+  "id": "neg-test-add",
+  "category": "negative/routine_implementation",
+  "held_out": true,
+  "description": "Commit adding unit tests.",
+  "repo": {
+    "name": "feedpull",
+    "commits": [
+      {
+        "message": "parser",
+        "files": {
+          "feedpull/parse.py": "def parse(x):\n    return [i.strip() for i in x]\n"
+        }
+      },
+      {
+        "message": "Add tests for parse()",
+        "files": {
+          "tests/test_parse.py": "from feedpull.parse import parse\n\n\ndef test_strips():\n    assert parse([' a ', 'b']) == ['a', 'b']\n\n\ndef test_empty():\n    assert parse([]) == []\n"
+        }
+      }
+    ]
+  },
+  "analyze_commit": "HEAD",
+  "record": {
+    "source": "git",
+    "event": "commit"
+  },
+  "labels": {
+    "should_record": false,
+    "expected_types": [],
+    "must_capture": [],
+    "must_not_capture": [
+      {
+        "item": "tests recorded",
+        "pattern": "test"
+      }
+    ],
+    "max_entries": 0
+  },
+  "existing_entries": []
+}

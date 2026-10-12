@@ -1,0 +1,64 @@
+{
+  "id": "pos-not-build",
+  "category": "positive/deliberate_non_decision",
+  "description": "Deliberate decision not to build multi-tenancy.",
+  "repo": {
+    "name": "clinic-booking",
+    "commits": [
+      {
+        "message": "Booking models",
+        "files": {
+          "booking/models.py": "class Booking:\n    pass\n"
+        }
+      }
+    ],
+    "uncommitted": {
+      "docs/scope.md": "# Scope\n\n- Single clinic only. No tenant_id columns.\n"
+    }
+  },
+  "record": {
+    "source": "claude",
+    "event": "Stop",
+    "prompt": "Should I add tenant_id everywhere now in case we sell this to other clinics later? ... ok agreed, skip it, note it down",
+    "assistant": "My recommendation is no, and since you agreed, I have written it into docs/scope.md: we are NOT building multi-tenancy now. The contract is with one clinic, there's no second customer in sight, and adding tenant_id to every table and query would cost roughly a week plus a permanent tax on every query and test. If a second clinic signs, deploying a separate instance per clinic is a viable path that needs no schema changes. The risk we accept is a costlier migration if we later want a shared multi-tenant deployment."
+  },
+  "labels": {
+    "should_record": true,
+    "expected_types": [
+      "decision"
+    ],
+    "must_capture": [
+      {
+        "fact": "decided not to build multi-tenancy",
+        "patterns": [
+          [
+            "multi.?tenan",
+            "tenant"
+          ],
+          [
+            "not",
+            "skip",
+            "defer",
+            "no "
+          ]
+        ]
+      },
+      {
+        "fact": "because only one clinic / no second customer",
+        "patterns": [
+          [
+            "one clinic",
+            "single clinic",
+            "second customer",
+            "one customer",
+            "single customer"
+          ]
+        ]
+      }
+    ],
+    "must_not_capture": [],
+    "max_entries": 2
+  },
+  "held_out": false,
+  "existing_entries": []
+}

@@ -1,0 +1,72 @@
+{
+  "id": "pos-mark-note",
+  "category": "positive/mark_note",
+  "description": "Explicit decision-watchdog mark note.",
+  "repo": {
+    "name": "clinic-booking",
+    "commits": [
+      {
+        "message": "Attachments",
+        "files": {
+          "booking/attachments.py": "UPLOAD_DIR = '/srv/uploads'\n"
+        }
+      }
+    ]
+  },
+  "record": {
+    "source": "manual",
+    "event": "manual",
+    "explicit_note": "Attachments are stored on local disk under /srv/uploads, not in Postgres and not in S3. Postgres bytea would bloat the nightly pg_dump; S3 was rejected because the clinic requires patient data to stay on their Slovak-hosted server. Backups are done with rsync."
+  },
+  "labels": {
+    "should_record": true,
+    "expected_types": [
+      "decision"
+    ],
+    "must_capture": [
+      {
+        "fact": "attachments on local disk",
+        "patterns": [
+          [
+            "disk",
+            "/srv/uploads",
+            "filesystem"
+          ]
+        ]
+      },
+      {
+        "fact": "S3 rejected for data residency",
+        "patterns": [
+          [
+            "s3"
+          ],
+          [
+            "resid",
+            "slovak",
+            "stay on",
+            "patient data",
+            "hosted"
+          ]
+        ]
+      },
+      {
+        "fact": "Postgres rejected because dump bloat",
+        "patterns": [
+          [
+            "postgres",
+            "bytea"
+          ],
+          [
+            "bloat",
+            "dump",
+            "backup"
+          ]
+        ]
+      }
+    ],
+    "must_not_capture": [],
+    "max_entries": 2
+  },
+  "held_out": false,
+  "existing_entries": []
+}

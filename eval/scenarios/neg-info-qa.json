@@ -1,0 +1,41 @@
+{
+  "id": "neg-info-qa",
+  "category": "negative/informational_qa",
+  "description": "Mirror of the motivating real failure: storage location / size / ready-to-publish question.",
+  "repo": {
+    "name": "snapshot-cli",
+    "commits": [
+      {
+        "message": "CLI",
+        "files": {
+          "snapshot.py": "import os\nDATA = os.path.expanduser('~/Library/Application Support/Snapshot')\n",
+          "README.md": "# snapshot-cli\n"
+        }
+      }
+    ]
+  },
+  "record": {
+    "source": "claude",
+    "event": "Stop",
+    "prompt": "where does it store the data and how much space does it take? is it ready to publish on github?",
+    "assistant": "Data location: everything lives under ~/Library/Application Support/Snapshot - the SQLite index (snapshots.db, 3.1 MB) and the blobs/ directory (412 MB across 1,870 files). Logs are in logs/ (220 KB). Total about 415 MB.\n\nPublishing readiness - not quite yet:\n1. There is no LICENSE file; without one nobody can legally reuse the code. MIT would match the README badge.\n2. The README has no install instructions.\n3. snapshot.py hard-codes the macOS path, so Linux users would get a broken default.\n4. No tests or CI.\nNone of these are hard; want me to fix them?"
+  },
+  "labels": {
+    "should_record": false,
+    "expected_types": [],
+    "must_capture": [],
+    "must_not_capture": [
+      {
+        "item": "storage location/size recorded",
+        "pattern": "415|412|storage|location"
+      },
+      {
+        "item": "missing license recorded as finding",
+        "pattern": "licen[cs]e"
+      }
+    ],
+    "max_entries": 0
+  },
+  "held_out": false,
+  "existing_entries": []
+}

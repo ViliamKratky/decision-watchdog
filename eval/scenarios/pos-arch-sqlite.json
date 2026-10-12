@@ -1,0 +1,62 @@
+{
+  "id": "pos-arch-sqlite",
+  "category": "positive/architecture_choice",
+  "description": "Agent session: user and agent pick SQLite over Postgres for a single-user desktop app.",
+  "repo": {
+    "name": "ledgerly",
+    "commits": [
+      {
+        "message": "Initial scaffold",
+        "files": {
+          "README.md": "# Ledgerly\n\nPersonal bookkeeping desktop app.\n",
+          "app/main.py": "def main():\n    print('ledgerly')\n"
+        }
+      }
+    ],
+    "uncommitted": {
+      "app/db.py": "import sqlite3\nfrom pathlib import Path\n\nDB_PATH = Path.home() / '.ledgerly' / 'ledger.db'\n\n\ndef connect():\n    DB_PATH.parent.mkdir(exist_ok=True)\n    conn = sqlite3.connect(DB_PATH)\n    conn.execute('PRAGMA journal_mode=WAL')\n    return conn\n"
+    }
+  },
+  "record": {
+    "source": "claude",
+    "event": "Stop",
+    "prompt": "We need persistence for transactions. Postgres or SQLite? It's only ever me using it on my laptop, I don't want to run a server.",
+    "assistant": "I went with SQLite. Since Ledgerly is a single-user desktop app, a Postgres server would add an install step and a background service for no benefit. SQLite ships with Python's stdlib, keeps everything in one file under ~/.ledgerly that is trivial to back up, and WAL mode gives us safe concurrent reads from the UI thread. The trade-off is that we'd need a migration if this ever became multi-user or needed concurrent writers from several machines. I added app/db.py with a connect() helper."
+  },
+  "labels": {
+    "should_record": true,
+    "expected_types": [
+      "decision"
+    ],
+    "must_capture": [
+      {
+        "fact": "chose SQLite over Postgres",
+        "patterns": [
+          [
+            "sqlite"
+          ],
+          [
+            "postgres"
+          ]
+        ]
+      },
+      {
+        "fact": "because single-user / no server to run",
+        "patterns": [
+          [
+            "single.user",
+            "one user",
+            "no server",
+            "without a server",
+            "server",
+            "desktop"
+          ]
+        ]
+      }
+    ],
+    "must_not_capture": [],
+    "max_entries": 2
+  },
+  "held_out": false,
+  "existing_entries": []
+}

@@ -1,0 +1,64 @@
+{
+  "id": "hard-slovak",
+  "category": "hard/slovak_prompt",
+  "description": "User writes Slovak; decision not to use Redis, in-memory cache instead.",
+  "repo": {
+    "name": "eshop-api",
+    "commits": [
+      {
+        "message": "product endpoints",
+        "files": {
+          "api/products.py": "def get_product(db, pid):\n    return db.fetch_product(pid)\n"
+        }
+      }
+    ],
+    "uncommitted": {
+      "api/products.py": "from functools import lru_cache\n\n\n@lru_cache(maxsize=2048)\ndef _cached_product(pid):\n    return _db().fetch_product(pid)\n\n\ndef get_product(db, pid):\n    return _cached_product(pid)\n"
+    }
+  },
+  "record": {
+    "source": "claude",
+    "event": "Stop",
+    "prompt": "produkty sa načítavajú pomaly. nechcem kvôli tomu pridávať Redis, appka beží len na jednom serveri a nechcem ďalšiu službu, ktorú treba spravovať. stačí cache v pamäti",
+    "assistant": "Done. I added an in-process LRU cache (functools.lru_cache, 2048 entries) around the product lookup instead of Redis. With a single server instance there is no cache-consistency problem between processes, and we avoid operating another service. Caveat: the cache is lost on restart and isn't invalidated when a product is edited; for now product edits are rare, but we should clear it on admin updates later."
+  },
+  "labels": {
+    "should_record": true,
+    "expected_types": [
+      "decision"
+    ],
+    "must_capture": [
+      {
+        "fact": "in-memory LRU cache instead of Redis",
+        "patterns": [
+          [
+            "redis"
+          ],
+          [
+            "lru",
+            "in.memory",
+            "in.process"
+          ]
+        ]
+      },
+      {
+        "fact": "because single server / no extra service",
+        "patterns": [
+          [
+            "single server",
+            "one server",
+            "single instance",
+            "another service",
+            "extra service",
+            "additional service"
+          ]
+        ]
+      }
+    ],
+    "must_not_capture": [],
+    "max_entries": 2,
+    "english_only": true
+  },
+  "held_out": false,
+  "existing_entries": []
+}

@@ -1,0 +1,73 @@
+{
+  "id": "hard-buried-decision",
+  "category": "hard/buried_decision",
+  "description": "One real decision (Postgres SKIP LOCKED queue instead of Redis) buried in a long chatty answer.",
+  "repo": {
+    "name": "ops-board",
+    "commits": [
+      {
+        "message": "jobs",
+        "files": {
+          "server/jobs.py": "import redis\nr = redis.Redis()\n\ndef enqueue(job):\n    r.lpush('jobs', job)\n"
+        }
+      }
+    ],
+    "uncommitted": {
+      "server/jobs.py": "CLAIM_SQL = '''\nUPDATE jobs SET claimed_at = now()\nWHERE id = (\n  SELECT id FROM jobs WHERE claimed_at IS NULL\n  ORDER BY id FOR UPDATE SKIP LOCKED LIMIT 1\n) RETURNING id, payload\n'''\n\n\ndef enqueue(conn, job):\n    conn.execute('INSERT INTO jobs(payload) VALUES (%s)', (job,))\n",
+      "server/static/board.css": ".card { padding: 12px; border-radius: 6px; }\n"
+    }
+  },
+  "record": {
+    "source": "claude",
+    "event": "Stop",
+    "prompt": "few things: the cards look cramped, logs are noisy, and remember we said no extra infra on the client's box - can the job queue work without redis?",
+    "assistant": "Sure, went through all of it.\n\nCards: bumped padding from 8 to 12px and rounded the corners a bit (6px). Looks less cramped on the 1080p screen in the control room, I checked the screenshot you sent.\n\nLogs: the noise was the health-check endpoint logging at INFO every 5 seconds. I moved that to DEBUG. Also fixed a typo in the startup banner ('Ops Bord').\n\nQueue: yes. Since the client's server must not get extra infrastructure and we already run Postgres, I replaced the Redis list with a `jobs` table and claim jobs with `SELECT ... FOR UPDATE SKIP LOCKED`, so multiple workers can pull concurrently without double-processing. Throughput is lower than Redis (we measured ~800 jobs/s in a quick local test, vs. our peak need of ~5/s), which is far more than enough, and we get transactional enqueue with the rest of the data for free. Redis can be removed from docker-compose.\n\nAnything else? I can also tweak the colour of the 'critical' badge, it's a bit hard to read."
+  },
+  "labels": {
+    "should_record": true,
+    "expected_types": [
+      "decision"
+    ],
+    "must_capture": [
+      {
+        "fact": "replaced Redis queue with Postgres SKIP LOCKED",
+        "patterns": [
+          [
+            "redis"
+          ],
+          [
+            "postgres",
+            "skip locked"
+          ]
+        ]
+      },
+      {
+        "fact": "because no extra infra on client server",
+        "patterns": [
+          [
+            "infra",
+            "extra",
+            "already run"
+          ]
+        ]
+      }
+    ],
+    "must_not_capture": [
+      {
+        "item": "CSS padding recorded",
+        "pattern": "padding|cramped|css"
+      },
+      {
+        "item": "log level recorded",
+        "pattern": "health.check|log level|debug"
+      },
+      {
+        "item": "typo recorded",
+        "pattern": "typo|bord"
+      }
+    ],
+    "max_entries": 2
+  },
+  "held_out": false,
+  "existing_entries": []
+}

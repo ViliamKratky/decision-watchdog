@@ -1,0 +1,36 @@
+{
+  "id": "hard-undecided-recommendation",
+  "category": "hard/recommendation_not_decided",
+  "held_out": true,
+  "description": "Agent recommends cron over Celery but user has not decided; nothing built.",
+  "repo": {
+    "name": "fleet-reports",
+    "commits": [
+      {
+        "message": "report job",
+        "files": {
+          "reports/job.py": "def monthly():\n    ...\n"
+        }
+      }
+    ]
+  },
+  "record": {
+    "source": "codex",
+    "event": "Stop",
+    "prompt": "for sending the monthly reports, should we use Celery or just a cron job? don't change anything yet, I want to think about it",
+    "assistant": "For one job per month, I'd lean towards a plain cron entry calling `python -m reports.job monthly`: no broker, no worker process, nothing to monitor beyond cron's mail. Celery (with beat) makes sense if we expect many scheduled or retried tasks, or need per-task visibility. A middle ground is APScheduler inside the app process. I haven't changed anything - let me know which way you want to go."
+  },
+  "labels": {
+    "should_record": false,
+    "expected_types": [],
+    "must_capture": [],
+    "must_not_capture": [
+      {
+        "item": "undecided recommendation recorded as decision",
+        "pattern": "cron|celery|apscheduler"
+      }
+    ],
+    "max_entries": 0
+  },
+  "existing_entries": []
+}

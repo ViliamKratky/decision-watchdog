@@ -1,0 +1,74 @@
+{
+  "id": "hard-reversal",
+  "category": "hard/reversal",
+  "description": "Earlier decision (MongoDB) is reversed; the reversal should be recorded referencing the original.",
+  "existing_entries": [
+    {
+      "type": "decision",
+      "title": "Chose MongoDB for event storage",
+      "summary": "Events are stored as documents in MongoDB because their shape varies by source and a schemaless store avoided migrations."
+    }
+  ],
+  "repo": {
+    "name": "fleet-reports",
+    "commits": [
+      {
+        "message": "Mongo event store",
+        "files": {
+          "events/store.py": "from pymongo import MongoClient\n\ndb = MongoClient()['fleet']\n\ndef save(event):\n    db.events.insert_one(event)\n"
+        }
+      }
+    ],
+    "uncommitted": {
+      "events/store.py": "import psycopg\nfrom psycopg.types.json import Jsonb\n\n\ndef save(conn, event):\n    conn.execute(\n        'INSERT INTO events(vehicle_id, kind, occurred_at, payload) VALUES (%s, %s, %s, %s)',\n        (event['vehicle_id'], event['kind'], event['occurred_at'], Jsonb(event)),\n    )\n",
+      "migrations/001_events.sql": "CREATE TABLE events (\n  id bigserial PRIMARY KEY,\n  vehicle_id int NOT NULL REFERENCES vehicles(id),\n  kind text NOT NULL,\n  occurred_at timestamptz NOT NULL,\n  payload jsonb NOT NULL\n);\n"
+    }
+  },
+  "record": {
+    "source": "claude",
+    "event": "Stop",
+    "prompt": "The monthly cost report needs to join events with vehicles and drivers and Mongo aggregation pipelines are getting painful. Let's move events to Postgres.",
+    "assistant": "Agreed - this reverses the earlier MongoDB choice. The reporting requirement means most queries are now joins between events, vehicles and drivers, which Mongo can only do with $lookup pipelines that we'd have to maintain by hand. I moved events into a Postgres `events` table with typed columns for the fields we join and filter on (vehicle_id, kind, occurred_at) and keep the variable part in a `payload jsonb` column, which preserves the flexibility that motivated Mongo in the first place. Cost: one more migration, and we'll need a one-off script to copy the ~200k existing documents."
+  },
+  "labels": {
+    "should_record": true,
+    "expected_types": [
+      "decision"
+    ],
+    "must_capture": [
+      {
+        "fact": "moved events from MongoDB to Postgres (reversal)",
+        "patterns": [
+          [
+            "mongo"
+          ],
+          [
+            "postgres"
+          ]
+        ]
+      },
+      {
+        "fact": "because reporting needs joins",
+        "patterns": [
+          [
+            "join",
+            "lookup",
+            "report"
+          ]
+        ]
+      },
+      {
+        "fact": "jsonb payload keeps flexibility",
+        "patterns": [
+          [
+            "jsonb",
+            "payload"
+          ]
+        ]
+      }
+    ],
+    "must_not_capture": [],
+    "max_entries": 2
+  },
+  "held_out": false
+}

@@ -1,0 +1,60 @@
+{
+  "id": "pos-constraint-ratelimit",
+  "category": "positive/constraint",
+  "description": "Agent session discovers GitHub API rate limit and switches to ETag conditional requests.",
+  "repo": {
+    "name": "repo-radar",
+    "commits": [
+      {
+        "message": "Poll GitHub repos every minute",
+        "files": {
+          "radar/poll.py": "import httpx\n\nasync def poll(client, repos):\n    for repo in repos:\n        await client.get(f'https://api.github.com/repos/{repo}/events')\n"
+        }
+      }
+    ],
+    "uncommitted": {
+      "radar/poll.py": "import httpx\n\n_etags: dict[str, str] = {}\n\n\nasync def poll(client, repos):\n    for repo in repos:\n        headers = {}\n        if repo in _etags:\n            headers['If-None-Match'] = _etags[repo]\n        r = await client.get(f'https://api.github.com/repos/{repo}/events', headers=headers)\n        if r.status_code == 304:\n            continue\n        _etags[repo] = r.headers.get('ETag', '')\n"
+    }
+  },
+  "record": {
+    "source": "codex",
+    "event": "Stop",
+    "prompt": "The poller started failing with 403 after about an hour, why?",
+    "assistant": "The 403s are GitHub's primary rate limit: an authenticated token gets 5,000 REST requests per hour, and with 120 repos polled every minute we were making 7,200 requests/hour. The response headers confirm it (X-RateLimit-Remaining: 0). I changed the poller to send conditional requests with If-None-Match/ETag; a 304 Not Modified response does not count against the rate limit, so steady-state usage drops to only the repos that actually changed. The alternative would have been polling less often (every 2 minutes), but that would delay notifications, which you said matter. Webhooks would be best long-term but need a public endpoint we don't have."
+  },
+  "labels": {
+    "should_record": true,
+    "expected_types": [
+      "constraint",
+      "decision",
+      "discovery",
+      "problem"
+    ],
+    "must_capture": [
+      {
+        "fact": "GitHub rate limit 5000/hour",
+        "patterns": [
+          [
+            "5,?000",
+            "rate limit"
+          ]
+        ]
+      },
+      {
+        "fact": "switched to ETag conditional requests",
+        "patterns": [
+          [
+            "etag",
+            "if-none-match",
+            "conditional",
+            "304"
+          ]
+        ]
+      }
+    ],
+    "must_not_capture": [],
+    "max_entries": 3
+  },
+  "held_out": false,
+  "existing_entries": []
+}

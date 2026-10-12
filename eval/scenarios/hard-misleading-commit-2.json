@@ -1,0 +1,41 @@
+{
+  "id": "hard-misleading-commit-2",
+  "category": "hard/misleading_commit_message",
+  "held_out": true,
+  "description": "Commit message claims a new caching architecture; diff only renames and reformats.",
+  "repo": {
+    "name": "eshop-api",
+    "commits": [
+      {
+        "message": "cache helper",
+        "files": {
+          "api/cache.py": "_c={}\ndef get(k):\n  return _c.get(k)\ndef put(k,v):\n  _c[k]=v\n"
+        }
+      },
+      {
+        "message": "Switch to new caching architecture",
+        "files": {
+          "api/cache.py": "_store = {}\n\n\ndef cache_get(key):\n    return _store.get(key)\n\n\ndef cache_put(key, value):\n    _store[key] = value\n"
+        }
+      }
+    ]
+  },
+  "analyze_commit": "HEAD",
+  "record": {
+    "source": "git",
+    "event": "commit"
+  },
+  "labels": {
+    "should_record": false,
+    "expected_types": [],
+    "must_capture": [],
+    "must_not_capture": [
+      {
+        "item": "fake architecture change recorded",
+        "pattern": "cach|architecture"
+      }
+    ],
+    "max_entries": 0
+  },
+  "existing_entries": []
+}

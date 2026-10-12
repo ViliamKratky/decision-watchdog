@@ -1,0 +1,36 @@
+{
+  "id": "neg-review-findings",
+  "category": "negative/review_findings",
+  "description": "Code review listing problems; nothing decided.",
+  "repo": {
+    "name": "repo-radar",
+    "commits": [
+      {
+        "message": "notifier",
+        "files": {
+          "radar/notify.py": "import smtplib\n\ndef send(to, body):\n    s = smtplib.SMTP('localhost')\n    s.sendmail('radar@x', to, body)\n"
+        }
+      }
+    ]
+  },
+  "record": {
+    "source": "claude",
+    "event": "Stop",
+    "prompt": "review radar/notify.py",
+    "assistant": "Review of radar/notify.py:\n1. The SMTP connection is never closed - use `with smtplib.SMTP(...) as s`.\n2. No timeout; a hung SMTP server blocks the poller forever.\n3. The From address is hard-coded.\n4. No retry on transient failures (4xx SMTP codes).\n5. `body` is sent without headers, so many servers will reject it or mark it as spam.\nI'd prioritise 2 and 5. Let me know which of these you want me to fix."
+  },
+  "labels": {
+    "should_record": false,
+    "expected_types": [],
+    "must_capture": [],
+    "must_not_capture": [
+      {
+        "item": "review findings recorded",
+        "pattern": "timeout|smtp|header|retry"
+      }
+    ],
+    "max_entries": 0
+  },
+  "held_out": false,
+  "existing_entries": []
+}

@@ -1,0 +1,46 @@
+{
+  "id": "neg-rename",
+  "category": "negative/rename",
+  "description": "Pure rename commit.",
+  "repo": {
+    "name": "ledgerly",
+    "commits": [
+      {
+        "message": "Add service",
+        "files": {
+          "app/usersvc.py": "class UserSvc:\n    def get(self, uid):\n        return uid\n",
+          "app/main.py": "from app.usersvc import UserSvc\n\nsvc = UserSvc()\n"
+        }
+      },
+      {
+        "message": "Rename UserSvc to UserService",
+        "files": {
+          "app/user_service.py": "class UserService:\n    def get(self, uid):\n        return uid\n",
+          "app/main.py": "from app.user_service import UserService\n\nsvc = UserService()\n"
+        },
+        "delete": [
+          "app/usersvc.py"
+        ]
+      }
+    ]
+  },
+  "analyze_commit": "HEAD",
+  "record": {
+    "source": "git",
+    "event": "commit"
+  },
+  "labels": {
+    "should_record": false,
+    "expected_types": [],
+    "must_capture": [],
+    "must_not_capture": [
+      {
+        "item": "rename recorded",
+        "pattern": "renam"
+      }
+    ],
+    "max_entries": 0
+  },
+  "held_out": false,
+  "existing_entries": []
+}

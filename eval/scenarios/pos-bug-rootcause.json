@@ -1,0 +1,64 @@
+{
+  "id": "pos-bug-rootcause",
+  "category": "positive/bug_root_cause",
+  "description": "Non-obvious timezone bug with root cause in container TZ.",
+  "repo": {
+    "name": "invoicer",
+    "commits": [
+      {
+        "message": "Invoice dates",
+        "files": {
+          "billing/dates.py": "import datetime as dt\n\ndef invoice_date():\n    return dt.datetime.now().date()\n"
+        }
+      },
+      {
+        "message": "Use Europe/Bratislava for invoice dates\n\nInvoices issued between 00:00 and 02:00 local time were dated the\nprevious day. Root cause: the production container runs with TZ=UTC,\nso naive datetime.now() returned UTC. Dates are now computed in the\nbusiness timezone explicitly.",
+        "files": {
+          "billing/dates.py": "import datetime as dt\nfrom zoneinfo import ZoneInfo\n\nBUSINESS_TZ = ZoneInfo('Europe/Bratislava')\n\n\ndef invoice_date():\n    return dt.datetime.now(BUSINESS_TZ).date()\n"
+        }
+      }
+    ]
+  },
+  "analyze_commit": "HEAD",
+  "record": {
+    "source": "git",
+    "event": "commit"
+  },
+  "labels": {
+    "should_record": true,
+    "expected_types": [
+      "problem",
+      "lesson",
+      "discovery"
+    ],
+    "must_capture": [
+      {
+        "fact": "invoices dated previous day after midnight",
+        "patterns": [
+          [
+            "previous day",
+            "wrong day",
+            "00:00|midnight"
+          ]
+        ]
+      },
+      {
+        "fact": "root cause: container TZ=UTC with naive datetime.now()",
+        "patterns": [
+          [
+            "utc"
+          ],
+          [
+            "naive",
+            "datetime.now",
+            "container"
+          ]
+        ]
+      }
+    ],
+    "must_not_capture": [],
+    "max_entries": 2
+  },
+  "held_out": false,
+  "existing_entries": []
+}

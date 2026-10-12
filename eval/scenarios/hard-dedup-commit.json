@@ -1,0 +1,48 @@
+{
+  "id": "hard-dedup-commit",
+  "category": "hard/dedup",
+  "description": "Commit of a change whose decision was already captured from the agent hook.",
+  "existing_entries": [
+    {
+      "type": "decision",
+      "title": "Chose SQLite over Postgres for local persistence",
+      "summary": "Ledgerly is a single-user desktop app, so SQLite (stdlib, single file under ~/.ledgerly, WAL mode) was chosen instead of running a Postgres server."
+    }
+  ],
+  "repo": {
+    "name": "ledgerly",
+    "commits": [
+      {
+        "message": "Initial scaffold",
+        "files": {
+          "README.md": "# Ledgerly\n",
+          "app/main.py": "def main():\n    print('ledgerly')\n"
+        }
+      },
+      {
+        "message": "Use SQLite for local storage",
+        "files": {
+          "app/db.py": "import sqlite3\nfrom pathlib import Path\n\nDB_PATH = Path.home() / '.ledgerly' / 'ledger.db'\n\n\ndef connect():\n    DB_PATH.parent.mkdir(exist_ok=True)\n    conn = sqlite3.connect(DB_PATH)\n    conn.execute('PRAGMA journal_mode=WAL')\n    return conn\n"
+        }
+      }
+    ]
+  },
+  "analyze_commit": "HEAD",
+  "record": {
+    "source": "git",
+    "event": "commit"
+  },
+  "labels": {
+    "should_record": false,
+    "expected_types": [],
+    "must_capture": [],
+    "must_not_capture": [
+      {
+        "item": "duplicate SQLite decision",
+        "pattern": "sqlite"
+      }
+    ],
+    "max_entries": 0
+  },
+  "held_out": false
+}

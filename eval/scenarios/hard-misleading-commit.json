@@ -1,0 +1,69 @@
+{
+  "id": "hard-misleading-commit",
+  "category": "hard/misleading_commit_message",
+  "description": "Commit says 'fix typo' but swaps bcrypt for argon2 with rehash-on-login.",
+  "repo": {
+    "name": "clinic-booking",
+    "commits": [
+      {
+        "message": "password hashing",
+        "files": {
+          "booking/passwords.py": "import bcrypt\n\n\ndef hash_pw(pw):\n    return bcrypt.hashpw(pw.encode(), bcrypt.gensalt())\n\n\ndef check(pw, hashed):\n    return bcrypt.checkpw(pw.encode(), hashed)\n",
+          "requirements.txt": "django==5.1.4\nbcrypt==4.2.0\n"
+        }
+      },
+      {
+        "message": "fix typo",
+        "files": {
+          "booking/passwords.py": "from argon2 import PasswordHasher\nfrom argon2.exceptions import VerifyMismatchError\nimport bcrypt\n\n_ph = PasswordHasher()\n\n\ndef hash_pw(pw):\n    return _ph.hash(pw)\n\n\ndef check(user, pw):\n    stored = user.password_hash\n    if stored.startswith('$2b$'):\n        # legacy bcrypt hash: verify, then transparently upgrade\n        if not bcrypt.checkpw(pw.encode(), stored.encode()):\n            return False\n        user.password_hash = _ph.hash(pw)\n        user.save(update_fields=['password_hash'])\n        return True\n    try:\n        return _ph.verify(stored, pw)\n    except VerifyMismatchError:\n        return False\n",
+          "requirements.txt": "django==5.1.4\nbcrypt==4.2.0\nargon2-cffi==23.1.0\n"
+        }
+      }
+    ]
+  },
+  "analyze_commit": "HEAD",
+  "record": {
+    "source": "git",
+    "event": "commit"
+  },
+  "labels": {
+    "should_record": true,
+    "expected_types": [
+      "decision"
+    ],
+    "must_capture": [
+      {
+        "fact": "switched password hashing from bcrypt to argon2",
+        "patterns": [
+          [
+            "argon2"
+          ],
+          [
+            "bcrypt"
+          ]
+        ]
+      },
+      {
+        "fact": "legacy hashes upgraded on login",
+        "patterns": [
+          [
+            "login",
+            "upgrade",
+            "rehash",
+            "legacy",
+            "transparent"
+          ]
+        ]
+      }
+    ],
+    "must_not_capture": [
+      {
+        "item": "described as typo fix",
+        "pattern": "typo"
+      }
+    ],
+    "max_entries": 2
+  },
+  "held_out": false,
+  "existing_entries": []
+}

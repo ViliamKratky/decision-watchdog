@@ -1,0 +1,41 @@
+{
+  "id": "neg-format",
+  "category": "negative/formatting",
+  "description": "Formatter-only commit.",
+  "repo": {
+    "name": "feedpull",
+    "commits": [
+      {
+        "message": "parser",
+        "files": {
+          "feedpull/parse.py": "def parse(x):\n  items=[]\n  for i in x: items.append( i.strip() )\n  return items\n"
+        }
+      },
+      {
+        "message": "Run black",
+        "files": {
+          "feedpull/parse.py": "def parse(x):\n    items = []\n    for i in x:\n        items.append(i.strip())\n    return items\n"
+        }
+      }
+    ]
+  },
+  "analyze_commit": "HEAD",
+  "record": {
+    "source": "git",
+    "event": "commit"
+  },
+  "labels": {
+    "should_record": false,
+    "expected_types": [],
+    "must_capture": [],
+    "must_not_capture": [
+      {
+        "item": "formatting recorded",
+        "pattern": "format|black"
+      }
+    ],
+    "max_entries": 0
+  },
+  "held_out": false,
+  "existing_entries": []
+}

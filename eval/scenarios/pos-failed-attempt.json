@@ -1,0 +1,61 @@
+{
+  "id": "pos-failed-attempt",
+  "category": "positive/failed_attempt",
+  "held_out": true,
+  "description": "WebSockets failed behind corporate proxy, reverted to SSE.",
+  "repo": {
+    "name": "ops-board",
+    "commits": [
+      {
+        "message": "Live updates via websockets",
+        "files": {
+          "server/live.py": "async def ws_handler(ws):\n    ...\n"
+        }
+      }
+    ],
+    "uncommitted": {
+      "server/live.py": "from starlette.responses import StreamingResponse\n\n\nasync def events(request):\n    async def stream():\n        async for msg in bus.subscribe():\n            yield f'data: {msg}\\n\\n'\n    return StreamingResponse(stream(), media_type='text/event-stream')\n"
+    }
+  },
+  "record": {
+    "source": "claude",
+    "event": "Stop",
+    "prompt": "the live board doesn't update for the client's users, works for us",
+    "assistant": "Their corporate proxy (Zscaler, per the response headers you pasted) terminates the WebSocket upgrade, so the connection silently falls back to nothing. We spent the morning trying wss on port 443 and a ping/pong keepalive; neither got through. Since the board only needs server-to-client updates, I replaced the WebSocket endpoint with Server-Sent Events, which is plain HTTP streaming and passes through the proxy. We lose client-to-server messages over the same channel, but those were never used."
+  },
+  "labels": {
+    "should_record": true,
+    "expected_types": [
+      "failed_attempt",
+      "decision",
+      "problem",
+      "constraint"
+    ],
+    "must_capture": [
+      {
+        "fact": "websockets blocked by corporate proxy",
+        "patterns": [
+          [
+            "websocket"
+          ],
+          [
+            "proxy",
+            "zscaler"
+          ]
+        ]
+      },
+      {
+        "fact": "switched to SSE",
+        "patterns": [
+          [
+            "sse",
+            "server-sent"
+          ]
+        ]
+      }
+    ],
+    "must_not_capture": [],
+    "max_entries": 3
+  },
+  "existing_entries": []
+}

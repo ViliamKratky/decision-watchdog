@@ -1,0 +1,65 @@
+{
+  "id": "pos-milestone-deploy",
+  "category": "positive/milestone",
+  "description": "First production deploy.",
+  "repo": {
+    "name": "clinic-booking",
+    "commits": [
+      {
+        "message": "Booking app",
+        "files": {
+          "booking/app.py": "app = None\n"
+        }
+      },
+      {
+        "message": "Add production compose file",
+        "files": {
+          "deploy/docker-compose.prod.yml": "services:\n  web:\n    image: ghcr.io/acme/clinic-booking:1.0.0\n    restart: unless-stopped\n  caddy:\n    image: caddy:2\n    ports: ['80:80', '443:443']\n"
+        }
+      }
+    ]
+  },
+  "record": {
+    "source": "claude",
+    "event": "Stop",
+    "prompt": "deploy it",
+    "assistant": "Done - this is the first production deployment. I pushed image ghcr.io/acme/clinic-booking:1.0.0, ran `docker compose -f deploy/docker-compose.prod.yml up -d` on the Hetzner VPS, applied the 4 database migrations, and Caddy obtained a Let's Encrypt certificate for booking.example-clinic.sk. Health check returns 200 and I made a test booking end to end, then deleted it."
+  },
+  "labels": {
+    "should_record": true,
+    "expected_types": [
+      "milestone"
+    ],
+    "must_capture": [
+      {
+        "fact": "first production deploy",
+        "patterns": [
+          [
+            "first",
+            "initial"
+          ],
+          [
+            "deploy",
+            "production",
+            "launch"
+          ]
+        ]
+      },
+      {
+        "fact": "on Hetzner VPS with docker compose",
+        "patterns": [
+          [
+            "hetzner",
+            "vps",
+            "docker",
+            "compose"
+          ]
+        ]
+      }
+    ],
+    "must_not_capture": [],
+    "max_entries": 2
+  },
+  "held_out": false,
+  "existing_entries": []
+}

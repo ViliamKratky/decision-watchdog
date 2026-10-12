@@ -1,0 +1,36 @@
+{
+  "id": "hard-slovak-negative",
+  "category": "hard/slovak_prompt",
+  "held_out": true,
+  "description": "Slovak informational question; nothing to record.",
+  "repo": {
+    "name": "eshop-api",
+    "commits": [
+      {
+        "message": "logging",
+        "files": {
+          "api/log.py": "LOG_DIR = '/var/log/eshop'\n"
+        }
+      }
+    ]
+  },
+  "record": {
+    "source": "claude",
+    "event": "Stop",
+    "prompt": "kde sa ukladajú logy a koľko miesta zaberá databáza? dá sa to už nasadiť?",
+    "assistant": "Logs go to /var/log/eshop (configured in api/log.py); the current directory is 1.4 GB because there's no rotation configured. The Postgres database is 820 MB, of which 610 MB is the order_events table.\n\nDeployment readiness: mostly yes, but I'd add logrotate first, and the .env.example is missing the SMTP variables. Want me to do those?"
+  },
+  "labels": {
+    "should_record": false,
+    "expected_types": [],
+    "must_capture": [],
+    "must_not_capture": [
+      {
+        "item": "log location/size recorded",
+        "pattern": "log|1\\.4|820|rotation"
+      }
+    ],
+    "max_entries": 0
+  },
+  "existing_entries": []
+}

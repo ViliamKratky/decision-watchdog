@@ -1,0 +1,36 @@
+{
+  "id": "neg-explain-code",
+  "category": "negative/informational_qa",
+  "held_out": true,
+  "description": "Explaining how existing code works.",
+  "repo": {
+    "name": "clinic-booking",
+    "commits": [
+      {
+        "message": "auth middleware",
+        "files": {
+          "booking/auth.py": "def middleware(get_response):\n    def inner(request):\n        token = request.COOKIES.get('session')\n        request.user = lookup(token)\n        return get_response(request)\n    return inner\n"
+        }
+      }
+    ]
+  },
+  "record": {
+    "source": "claude",
+    "event": "Stop",
+    "prompt": "how does the auth middleware work?",
+    "assistant": "booking/auth.py defines a classic Django-style middleware factory. On each request, `inner` reads the `session` cookie, resolves it to a user via `lookup(token)`, attaches it as `request.user`, then calls the next handler. There's no caching, so each request hits lookup(); and if the cookie is missing, lookup receives None and (judging by its implementation) returns an AnonymousUser."
+  },
+  "labels": {
+    "should_record": false,
+    "expected_types": [],
+    "must_capture": [],
+    "must_not_capture": [
+      {
+        "item": "explanation recorded",
+        "pattern": "middleware|cookie|session"
+      }
+    ],
+    "max_entries": 0
+  },
+  "existing_entries": []
+}

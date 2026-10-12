@@ -1,0 +1,66 @@
+{
+  "id": "pos-lib-httpx",
+  "category": "positive/library_choice",
+  "held_out": true,
+  "description": "Commit with an informative message body choosing httpx over requests/aiohttp.",
+  "repo": {
+    "name": "feedpull",
+    "commits": [
+      {
+        "message": "Initial fetcher using urllib",
+        "files": {
+          "feedpull/fetch.py": "import urllib.request\n\ndef fetch(url):\n    return urllib.request.urlopen(url).read()\n",
+          "requirements.txt": "fastapi==0.115.0\n"
+        }
+      },
+      {
+        "message": "Switch HTTP client to httpx\n\nThe fetcher now runs inside FastAPI handlers, so it must be async.\nConsidered aiohttp, but httpx offers the same sync/async API and\nbuilt-in HTTP/2, and its test transport lets us mock without a server.\nrequests was ruled out because it has no async support.",
+        "files": {
+          "feedpull/fetch.py": "import httpx\n\n_client = httpx.AsyncClient(http2=True, timeout=10)\n\n\nasync def fetch(url: str) -> bytes:\n    response = await _client.get(url)\n    response.raise_for_status()\n    return response.content\n",
+          "requirements.txt": "fastapi==0.115.0\nhttpx[http2]==0.27.2\n"
+        }
+      }
+    ]
+  },
+  "analyze_commit": "HEAD",
+  "record": {
+    "source": "git",
+    "event": "commit"
+  },
+  "labels": {
+    "should_record": true,
+    "expected_types": [
+      "decision"
+    ],
+    "must_capture": [
+      {
+        "fact": "chose httpx",
+        "patterns": [
+          [
+            "httpx"
+          ]
+        ]
+      },
+      {
+        "fact": "alternatives aiohttp/requests",
+        "patterns": [
+          [
+            "aiohttp",
+            "requests"
+          ]
+        ]
+      },
+      {
+        "fact": "because async needed in FastAPI",
+        "patterns": [
+          [
+            "async"
+          ]
+        ]
+      }
+    ],
+    "must_not_capture": [],
+    "max_entries": 2
+  },
+  "existing_entries": []
+}

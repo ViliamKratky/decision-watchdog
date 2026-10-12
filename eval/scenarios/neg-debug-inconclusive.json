@@ -1,0 +1,39 @@
+{
+  "id": "neg-debug-inconclusive",
+  "category": "negative/debug_inconclusive",
+  "description": "Debugging session that ends without a conclusion.",
+  "repo": {
+    "name": "ops-board",
+    "commits": [
+      {
+        "message": "tests",
+        "files": {
+          "tests/test_live.py": "def test_stream():\n    assert True\n"
+        }
+      }
+    ],
+    "uncommitted": {
+      "tests/test_live.py": "import logging\nlogging.basicConfig(level=logging.DEBUG)\n\n\ndef test_stream():\n    assert True\n"
+    }
+  },
+  "record": {
+    "source": "claude",
+    "event": "Stop",
+    "prompt": "test_stream is flaky in CI, can you figure out why",
+    "assistant": "I ran test_stream 200 times locally and it passed every time. I checked whether it depends on test order (pytest -p random-order, 50 runs: all pass), increased the event-loop debug logging, and looked at the last 10 CI failures - they all time out after 5 s but the logs don't show where. I couldn't reproduce it or find a root cause. Next steps I'd suggest: run CI with `-x --log-level=DEBUG` and capture the full log on the next failure. I left DEBUG logging enabled in the test file for now."
+  },
+  "labels": {
+    "should_record": false,
+    "expected_types": [],
+    "must_capture": [],
+    "must_not_capture": [
+      {
+        "item": "unresolved flakiness recorded as finding",
+        "pattern": "flak|timeout|reproduce"
+      }
+    ],
+    "max_entries": 0
+  },
+  "held_out": false,
+  "existing_entries": []
+}

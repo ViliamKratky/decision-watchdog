@@ -1,0 +1,72 @@
+{
+  "id": "hard-mixed-decision-and-findings",
+  "category": "hard/mixed",
+  "description": "One confirmed fix/decision (idempotency key for double charges) plus unrelated review findings nobody acted on.",
+  "repo": {
+    "name": "eshop-api",
+    "commits": [
+      {
+        "message": "payments",
+        "files": {
+          "api/payments.py": "def create_payment(order):\n    return gateway.charge(order.total)\n"
+        }
+      }
+    ],
+    "uncommitted": {
+      "api/payments.py": "import uuid\n\n\ndef create_payment(order):\n    key = order.idempotency_key or str(uuid.uuid4())\n    order.idempotency_key = key\n    order.save()\n    return gateway.charge(order.total, idempotency_key=key)\n"
+    }
+  },
+  "record": {
+    "source": "claude",
+    "event": "Stop",
+    "prompt": "customers got charged twice when they double-clicked pay. fix it. also, while you're there, look over the payments module",
+    "assistant": "Fixed the double charge. Root cause: the Pay button posts twice on a double-click, and each request created a new charge. Rather than only disabling the button in the UI (which wouldn't cover retries after a network timeout), I persist an idempotency key on the order and pass it to the gateway, which deduplicates charges with the same key for 24h. A repeated request now returns the original charge.\n\nWhile reviewing the module I also noticed, but did not change:\n- refunds don't check that the refund amount <= captured amount\n- gateway errors are logged with the full card BIN\n- the webhook handler doesn't verify the signature\nTell me if you want those handled."
+  },
+  "labels": {
+    "should_record": true,
+    "expected_types": [
+      "problem",
+      "decision"
+    ],
+    "must_capture": [
+      {
+        "fact": "double charge from double-click",
+        "patterns": [
+          [
+            "double",
+            "twice"
+          ],
+          [
+            "charge",
+            "click"
+          ]
+        ]
+      },
+      {
+        "fact": "fixed with idempotency key persisted on order",
+        "patterns": [
+          [
+            "idempoten"
+          ]
+        ]
+      }
+    ],
+    "must_not_capture": [
+      {
+        "item": "unacted refund finding",
+        "pattern": "refund"
+      },
+      {
+        "item": "unacted BIN logging finding",
+        "pattern": "\\bbin\\b"
+      },
+      {
+        "item": "unacted webhook finding",
+        "pattern": "webhook|signature"
+      }
+    ],
+    "max_entries": 2
+  },
+  "held_out": false,
+  "existing_entries": []
+}
